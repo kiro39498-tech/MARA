@@ -19,7 +19,7 @@ async def seed_sample_data():
             # Check if data already exists
             result = await db.execute(select(Product).limit(1))
             if result.scalar_one_or_none():
-                print("⚠️  Sample data already exists. Skipping seed.")
+                print("[WARNING] Sample data already exists. Skipping seed.")
                 return
 
             # Create default category
@@ -105,13 +105,13 @@ async def seed_sample_data():
 
             await db.commit()
 
-            print("✅ Sample data seeded successfully:")
+            print("[OK] Sample data seeded successfully:")
             print(f"   - Category: {category.name}")
             print(f"   - Suppliers: {supplier1.name}, {supplier2.name}")
             print(f"   - Products: {len(products)} items")
 
         except Exception as e:
-            print(f"❌ Error seeding sample data: {e}")
+            print(f"[ERROR] Error seeding sample data: {e}")
             await db.rollback()
             raise
 

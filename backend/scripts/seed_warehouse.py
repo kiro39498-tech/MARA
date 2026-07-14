@@ -21,7 +21,7 @@ async def seed_default_warehouse():
             existing = result.scalar_one_or_none()
 
             if existing:
-                print(f"✅ Warehouse already exists: {existing.name}")
+                print(f"[OK] Warehouse already exists: {existing.name}")
                 return
 
             # Create default warehouse
@@ -39,12 +39,12 @@ async def seed_default_warehouse():
             await db.refresh(warehouse)
 
             print(
-                f"✅ Created default warehouse: {warehouse.name} "
+                f"[OK] Created default warehouse: {warehouse.name} "
                 f"(ID: {warehouse.id})"
             )
 
         except Exception as e:
-            print(f"❌ Error seeding warehouse: {e}")
+            print(f"[ERROR] Error seeding warehouse: {e}")
             await db.rollback()
             raise
 

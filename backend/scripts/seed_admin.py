@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy import select  # noqa: E402
 from app.core.database import AsyncSessionLocal  # noqa: E402
-from app.models.user import User  # noqa: E402
+from app.models.user import User, Role  # noqa: E402
 from app.core.config import settings  # noqa: E402
 from app.services.user_service import UserService  # noqa: E402
 from app.schemas.user import UserCreate  # noqa: E402
@@ -31,35 +31,45 @@ async def main():
         existing_user = result.scalars().first()
 
         if existing_user:
-            print("⚠️  Users already exist in database. Seeding skipped.")
+            print("[WARNING] Users already exist in database. Seeding skipped.")
             print(
                 "   Existing user:"
                 f" {existing_user.username} ({existing_user.email})"
             )
             return
 
-        # Create admin user using UserService (handles password hashing)
+        # Create admin user directly using the SQLAlchemy model to bypass UserCreate constraints (e.g. password uppercase policy)
         try:
-            service = UserService(db)
+            # Get ADMIN role
+            role_result = await db.execute(select(Role).filter(Role.name == "ADMIN"))
+            admin_role = role_result.scalar_one_or_none()
+            if not admin_role:
+                admin_role = Role(name="ADMIN", description="Full system access")
+                db.add(admin_role)
+                await db.flush()
 
-            user_in = UserCreate(
+            from app.core.security import get_password_hash
+            hashed_password = get_password_hash(settings.FIRST_SUPERUSER_PASSWORD)
+
+            user = User(
                 email=settings.FIRST_SUPERUSER_EMAIL,
                 username="admin",
                 full_name="Admin User",
-                password=settings.FIRST_SUPERUSER_PASSWORD,
+                hashed_password=hashed_password,
                 is_active=True,
                 is_superuser=True,
+                roles=[admin_role],
             )
 
-            user = await service.create(user_in)
+            db.add(user)
             await db.commit()
             await db.refresh(user)
 
-            print("✅ Admin user created successfully!")
+            print("[OK] Admin user created successfully!")
             print(f"   Email:    {user.email}")
             print(f"   Username: {user.username}")
             print(f"   Password: {settings.FIRST_SUPERUSER_PASSWORD}")
-            print("\n💾 Test login:")
+            print("\n[INFO] Test login:")
             print(
                 "   curl -X POST"
                 " 'http://127.0.0.1:8000/api/v1/auth/login' \\"
@@ -74,7 +84,7 @@ async def main():
             )
 
         except Exception as e:
-            print(f"❌ Error creating admin user: {e}")
+            print(f"[ERROR] Error creating admin user: {e}")
             import traceback
 
             traceback.print_exc()

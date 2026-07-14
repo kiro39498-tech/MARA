@@ -20,6 +20,7 @@ from app.api.v1.endpoints import (
     audit_logs,
     dashboard,
     health,
+    planning_api,
 )
 
 api_router = APIRouter()
@@ -66,6 +67,9 @@ api_router.include_router(
 )
 api_router.include_router(
     audit_logs.router, prefix="/audit-logs", tags=["Audit Logs"]
+)
+api_router.include_router(
+    planning_api.router, prefix="/planning", tags=["Planning"]
 )
 api_router.include_router(
     dashboard.router, prefix="/dashboard", tags=["Dashboard"]

@@ -74,6 +74,8 @@ class WarehouseService(
 
         Optionally excludes one warehouse ID.
         """
+        if self.db is None:
+            return False
         query = select(Warehouse).where(
             func.lower(Warehouse.code) == code.strip().lower()
         )

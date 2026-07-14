@@ -28,17 +28,19 @@ class NotificationService:
         )
         activities = activity_rows.scalars().all()
 
+        from app.models.inventory import Inventory
+        from app.models.material import Material
+
         low_stock_rows = await self.db.execute(
-            select(Product)
+            select(Inventory)
+            .join(Material, Inventory.material_id == Material.id)
             .where(
-                Product.stock_status.in_(
-                    [StockStatus.LOW_STOCK, StockStatus.OUT_OF_STOCK]
-                )
+                (Inventory.on_hand - Inventory.reserved - Inventory.blocked - Inventory.quality_hold) <= Inventory.safety_stock
             )
-            .order_by(Product.updated_at.desc())
+            .order_by(Inventory.updated_at.desc())
             .limit(source_limit)
         )
-        low_stock_products = low_stock_rows.scalars().all()
+        low_stock_items = low_stock_rows.scalars().all()
 
         for activity in activities:
             source_key = f"activity:{activity.id}"
@@ -59,19 +61,19 @@ class NotificationService:
                 user_id=user_id, source_key=source_key, payload=payload
             )
 
-        for product in low_stock_products:
-            source_key = f"low_stock:{product.id}"
-            created_at = product.updated_at or datetime.utcnow()
+        for inv in low_stock_items:
+            source_key = f"low_stock:{inv.id}"
+            created_at = inv.updated_at or datetime.utcnow()
             payload = {
                 "title": "Low Stock Alert",
                 "message": (
-                    f"{product.name} is at {product.quantity} units "
-                    f"(reorder at {product.reorder_level})."
+                    f"Material {inv.material.name} is at {inv.on_hand} units at plant {inv.plant.name} "
+                    f"(safety stock is {inv.safety_stock})."
                 ),
                 "type": "warning",
-                "action_url": "/products",
+                "action_url": "/materials",
                 "source_type": "low_stock",
-                "source_id": str(product.id),
+                "source_id": str(inv.id),
                 "source_key": source_key,
                 "created_at": created_at,
             }

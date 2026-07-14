@@ -10,10 +10,10 @@ from app.schemas.user import (
     RoleResponse,
     PermissionResponse,
 )
-from app.schemas.product import (
-    ProductCreate,
-    ProductUpdate,
-    ProductResponse,
+from app.schemas.material import (
+    MaterialCreate,
+    MaterialUpdate,
+    MaterialResponse,
     CategoryCreate,
     CategoryResponse,
 )
@@ -22,32 +22,29 @@ from app.schemas.supplier import (
     SupplierUpdate,
     SupplierResponse,
 )
-from app.schemas.purchase import (
-    PurchaseCreate,
-    PurchaseUpdate,
-    PurchaseResponse,
-    PurchaseItemCreate,
-    PurchaseItemResponse,
+from app.schemas.purchase_order import (
+    PurchaseOrderCreate,
+    PurchaseOrderUpdate,
+    PurchaseOrderResponse,
+    PurchaseOrderItemCreate,
+    PurchaseOrderItemResponse,
 )
-from app.schemas.sale import (
-    SaleCreate,
-    SaleUpdate,
-    SaleResponse,
-    SaleItemCreate,
-    SaleItemResponse,
+from app.schemas.production_order import (
+    ProductionOrderCreate,
+    ProductionOrderUpdate,
+    ProductionOrderResponse,
 )
 from app.schemas.audit_log import AuditLogResponse
 from app.schemas.common import MessageResponse, PaginationResponse
-from app.schemas.warehouse import (
-    WarehouseCreate,
-    WarehouseUpdate,
-    WarehouseResponse,
+from app.schemas.plant import (
+    PlantCreate,
+    PlantUpdate,
+    PlantResponse,
 )
-from app.schemas.product_location import (
-    ProductLocationCreate,
-    ProductLocationUpdate,
-    ProductLocationResponse,
-    ProductStockByLocation,
+from app.schemas.inventory import (
+    InventoryCreate,
+    InventoryUpdate,
+    InventoryResponse,
 )
 from app.schemas.stock_ledger import (
     StockLedgerCreate,
@@ -71,34 +68,31 @@ __all__ = [
     "RoleCreate",
     "RoleResponse",
     "PermissionResponse",
-    "ProductCreate",
-    "ProductUpdate",
-    "ProductResponse",
+    "MaterialCreate",
+    "MaterialUpdate",
+    "MaterialResponse",
     "CategoryCreate",
     "CategoryResponse",
     "SupplierCreate",
     "SupplierUpdate",
     "SupplierResponse",
-    "PurchaseCreate",
-    "PurchaseUpdate",
-    "PurchaseResponse",
-    "PurchaseItemCreate",
-    "PurchaseItemResponse",
-    "SaleCreate",
-    "SaleUpdate",
-    "SaleResponse",
-    "SaleItemCreate",
-    "SaleItemResponse",
+    "PurchaseOrderCreate",
+    "PurchaseOrderUpdate",
+    "PurchaseOrderResponse",
+    "PurchaseOrderItemCreate",
+    "PurchaseOrderItemResponse",
+    "ProductionOrderCreate",
+    "ProductionOrderUpdate",
+    "ProductionOrderResponse",
     "AuditLogResponse",
     "MessageResponse",
     "PaginationResponse",
-    "WarehouseCreate",
-    "WarehouseUpdate",
-    "WarehouseResponse",
-    "ProductLocationCreate",
-    "ProductLocationUpdate",
-    "ProductLocationResponse",
-    "ProductStockByLocation",
+    "PlantCreate",
+    "PlantUpdate",
+    "PlantResponse",
+    "InventoryCreate",
+    "InventoryUpdate",
+    "InventoryResponse",
     "StockLedgerCreate",
     "StockLedgerResponse",
     "StockLedgerFilter",

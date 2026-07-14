@@ -39,6 +39,17 @@ const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(
 const UsersPage = lazy(() => import('@/features/users/UsersPage').then(m => ({ default: m.UsersPage })));
 const DebugAuthPage = lazy(() => import('@/features/debug/DebugAuthPage').then(m => ({ default: m.DebugAuthPage })));
 
+const MaterialsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.MaterialsPage })));
+const PlantsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PlantsPage })));
+const InventoryHealthPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.InventoryHealthPage })));
+const ProductionOrdersPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.ProductionOrdersPage })));
+const PurchaseOrdersPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PurchaseOrdersPage })));
+const MaterialProjectionPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.MaterialProjectionPage })));
+const ShortageAnalysisPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.ShortageAnalysisPage })));
+const RecommendationsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.RecommendationsPage })));
+const SupplierPerformancePage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.SupplierPerformancePage })));
+const PlanningCopilotPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PlanningCopilotPage })));
+
 // Fallback skeleton loader while routes load
 const PageLoader = () => (
     <div className="flex items-center justify-center p-8 h-full">
@@ -67,22 +78,35 @@ export function AppRouter() {
                         <Route path="/" element={<Navigate to="/dashboard" replace />} />
                         <Route path="/dashboard" element={<DashboardPage />} />
 
-                        <Route path="/products" element={<ProductsPage />} />
+                        {/* Manufacturing Planning Routes */}
+                        <Route path="/materials" element={<MaterialsPage />} />
+                        <Route path="/plants" element={<PlantsPage />} />
+                        <Route path="/inventory-health" element={<InventoryHealthPage />} />
+                        <Route path="/production-orders" element={<ProductionOrdersPage />} />
+                        <Route path="/purchase-orders" element={<PurchaseOrdersPage />} />
+                        
+                        <Route path="/material-projection" element={<MaterialProjectionPage />} />
+                        <Route path="/shortage-analysis" element={<ShortageAnalysisPage />} />
+                        <Route path="/recommendations" element={<RecommendationsPage />} />
+                        <Route path="/supplier-performance" element={<SupplierPerformancePage />} />
+                        <Route path="/planning-copilot" element={<PlanningCopilotPage />} />
+
+                        <Route path="/products" element={<MaterialsPage />} />
                         <Route path="/suppliers" element={<SuppliersPage />} />
                         <Route element={<RequirePermission permission={PERMISSIONS.WAREHOUSE_VIEW} />}>
-                            <Route path="/warehouses" element={<WarehousesListPage />} />
+                            <Route path="/warehouses" element={<PlantsPage />} />
                         </Route>
                         <Route element={<RequirePermission permission={PERMISSIONS.CUSTOMER_VIEW} />}>
                             <Route path="/customers" element={<CustomersListPage />} />
                             <Route path="/customers/:id" element={<CustomerDetailsPage />} />
                         </Route>
                         <Route path="/purchases">
-                            <Route index element={<PurchasesListPage />} />
+                            <Route index element={<PurchaseOrdersPage />} />
                             <Route path="new" element={<PurchaseWizard />} />
                             <Route path=":id" element={<PurchaseDetailsPage />} />
                         </Route>
                         <Route path="/sales">
-                            <Route index element={<SalesPage />} />
+                            <Route index element={<ProductionOrdersPage />} />
                             <Route path="new" element={<CreateSalePage />} />
                             <Route path=":id" element={<SaleDetailsPage />} />
                         </Route>
@@ -97,15 +121,15 @@ export function AppRouter() {
                         </Route>
 
                         <Route element={<RequirePermission permission={PERMISSIONS.ALERTS_VIEW} />}>
-                            <Route path="/alerts" element={<AlertsPage />} />
+                            <Route path="/alerts" element={<ShortageAnalysisPage />} />
                         </Route>
 
                         <Route element={<RequirePermission permission={PERMISSIONS.AI_FORECAST_VIEW} />}>
-                            <Route path="/ai/forecast" element={<AIForecastPage />} />
+                            <Route path="/ai/forecast" element={<MaterialProjectionPage />} />
                         </Route>
 
                         <Route element={<RequirePermission permission={PERMISSIONS.AI_REORDER_VIEW} />}>
-                            <Route path="/ai/reorder" element={<AIReorderPage />} />
+                            <Route path="/ai/reorder" element={<RecommendationsPage />} />
                         </Route>
 
                         <Route element={<RequirePermission permission={PERMISSIONS.ADMIN_AUDIT_VIEW} />}>

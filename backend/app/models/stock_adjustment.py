@@ -29,8 +29,8 @@ class StockAdjustment(Base):
 
     __tablename__ = "stock_adjustments"
     __table_args__ = (
-        Index("ix_stock_adjustments_product_id", "product_id"),
-        Index("ix_stock_adjustments_warehouse_id", "warehouse_id"),
+        Index("ix_stock_adjustments_material_id", "material_id"),
+        Index("ix_stock_adjustments_plant_id", "plant_id"),
         Index("ix_stock_adjustments_created_at", "created_at"),
         Index(
             "ix_stock_adjustments_adjustment_reference",
@@ -40,8 +40,8 @@ class StockAdjustment(Base):
     )
 
     id = Column(Integer, primary_key=True, index=True)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    warehouse_id = Column(Integer, ForeignKey("warehouses.id"), nullable=False)
+    material_id = Column(Integer, ForeignKey("materials.id"), nullable=False)
+    plant_id = Column(Integer, ForeignKey("plants.id"), nullable=False)
     adjustment_type = Column(
         SQLEnum(
             StockAdjustmentType,
@@ -61,13 +61,13 @@ class StockAdjustment(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    product = relationship("Product", lazy="selectin")
-    warehouse = relationship("Warehouse", lazy="selectin")
+    material = relationship("Material", lazy="selectin")
+    plant = relationship("Plant", lazy="selectin")
     user = relationship("User", lazy="selectin")
 
     def __repr__(self):
         return (
             f"<StockAdjustment {self.id}: {self.adjustment_type.value} "
-            f"{self.quantity} for product {self.product_id} at "
-            f"warehouse {self.warehouse_id}>"
+            f"{self.quantity} for material {self.material_id} at "
+            f"plant {self.plant_id}>"
         )

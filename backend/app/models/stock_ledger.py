@@ -20,9 +20,9 @@ class StockTransactionType(str, enum.Enum):
     """Stock transaction type enumeration."""
 
     IN = "in"  # Stock increase (purchase receive)
-    OUT = "out"  # Stock decrease (sale complete)
+    OUT = "out"  # Stock decrease (production consumption/sale complete)
     ADJUST = "adjust"  # Manual adjustment (inventory count correction)
-    TRANSFER = "transfer"  # Transfer between warehouses
+    TRANSFER = "transfer"  # Transfer between plants
 
 
 class StockLedger(Base):
@@ -37,11 +37,11 @@ class StockLedger(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # What changed
-    product_id = Column(
-        Integer, ForeignKey("products.id"), nullable=False, index=True
+    material_id = Column(
+        Integer, ForeignKey("materials.id"), nullable=False, index=True
     )
-    warehouse_id = Column(
-        Integer, ForeignKey("warehouses.id"), nullable=False, index=True
+    plant_id = Column(
+        Integer, ForeignKey("plants.id"), nullable=False, index=True
     )
 
     # Transaction type
@@ -57,10 +57,10 @@ class StockLedger(Base):
     # Reference (what caused this change)
     reference_type = Column(
         String(50), nullable=True, index=True
-    )  # e.g., "purchase", "sale", "adjustment"
+    )  # e.g., "purchase", "production", "adjustment"
     reference_id = Column(
         Integer, nullable=True, index=True
-    )  # ID of the purchase/sale/etc
+    )  # ID of the purchase_order/production_order/etc
 
     # Metadata
     note = Column(Text, nullable=True)
@@ -73,16 +73,16 @@ class StockLedger(Base):
     )
 
     # Relationships
-    product = relationship(
-        "Product", back_populates="ledger_entries", lazy="selectin"
+    material = relationship(
+        "Material", back_populates="ledger_entries", lazy="selectin"
     )
-    warehouse = relationship(
-        "Warehouse", back_populates="stock_ledger_entries", lazy="selectin"
+    plant = relationship(
+        "Plant", back_populates="stock_ledger_entries", lazy="selectin"
     )
     user = relationship("User", lazy="selectin")
 
     def __repr__(self):
         return (
-            f"<StockLedger {self.type.value}: product_id={self.product_id}, "
+            f"<StockLedger {self.type.value}: material_id={self.material_id}, "
             f"qty={self.qty_change:+d}>"
         )

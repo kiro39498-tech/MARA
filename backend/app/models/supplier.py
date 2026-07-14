@@ -37,8 +37,8 @@ class Supplier(Base, TimeStampMixin):
     is_active = Column(Boolean, default=True, nullable=False)
 
     # Relationships
-    purchases = relationship(
-        "Purchase", back_populates="supplier", lazy="select"
+    purchase_orders = relationship(
+        "PurchaseOrder", back_populates="supplier", lazy="select"
     )
 
     def __repr__(self):

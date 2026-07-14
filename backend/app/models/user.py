@@ -71,8 +71,6 @@ class User(Base, TimeStampMixin):
     roles = relationship(
         "Role", secondary=user_roles, back_populates="users", lazy="selectin"
     )
-    sales = relationship("Sale", back_populates="user", lazy="select")
-    purchases = relationship("Purchase", back_populates="user", lazy="select")
     audit_logs = relationship("AuditLog", back_populates="user", lazy="select")
     password_reset_tokens = relationship(
         "PasswordResetToken",

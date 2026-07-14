@@ -52,7 +52,5 @@ class Customer(Base, TimeStampMixin):
     is_active = Column(Boolean, nullable=False, default=True)
     notes = Column(Text, nullable=True)
 
-    sales = relationship("Sale", back_populates="customer", lazy="select")
-
     def __repr__(self):
         return f"<Customer {self.customer_code}: {self.full_name}>"

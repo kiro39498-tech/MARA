@@ -46,32 +46,29 @@ interface SidebarProps {
 
 const navGroups: NavGroup[] = [
     {
-        title: 'Core',
+        title: 'Manufacturing Planning',
         items: [
-            { title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard', permission: PERMISSIONS.DASHBOARD_VIEW },
-            { title: 'Products', icon: Package, href: '/products', permission: PERMISSIONS.PRODUCTS_VIEW },
-            { title: 'Suppliers', icon: Warehouse, href: '/suppliers', permission: PERMISSIONS.SUPPLIERS_VIEW },
-            { title: 'Warehouses', icon: Building2, href: '/warehouses', permission: PERMISSIONS.WAREHOUSE_VIEW },
-            { title: 'Customers', icon: Users, href: '/customers', permission: PERMISSIONS.CUSTOMER_VIEW },
-            { title: 'Purchases', icon: ShoppingCart, href: '/purchases', permission: PERMISSIONS.PURCHASES_VIEW },
-            { title: 'Sales', icon: Receipt, href: '/sales', permission: PERMISSIONS.SALES_VIEW },
-            { title: 'Stock Adjustments', icon: ClipboardList, href: '/stock-adjustments', permission: PERMISSIONS.STOCK_ADJUSTMENT_VIEW },
-            { title: 'Reports', icon: BarChart3, href: '/reports', permission: PERMISSIONS.REPORTS_VIEW },
+            { title: 'Planning Dashboard', icon: LayoutDashboard, href: '/dashboard', permission: PERMISSIONS.DASHBOARD_VIEW },
+            { title: 'Materials', icon: Package, href: '/materials', permission: PERMISSIONS.PRODUCTS_VIEW },
+            { title: 'Plants', icon: Building2, href: '/plants', permission: PERMISSIONS.WAREHOUSE_VIEW },
+            { title: 'Inventory Health', icon: Warehouse, href: '/inventory-health', permission: PERMISSIONS.PRODUCTS_VIEW },
+            { title: 'Production Orders', icon: ClipboardList, href: '/production-orders', permission: PERMISSIONS.SALES_VIEW },
+            { title: 'Purchase Orders', icon: ShoppingCart, href: '/purchase-orders', permission: PERMISSIONS.PURCHASES_VIEW },
         ],
     },
     {
-        title: 'AI & Alerts',
+        title: 'Analysis & Support',
         items: [
-            { title: 'Alerts', icon: AlertTriangle, href: '/alerts', permission: PERMISSIONS.ALERTS_VIEW },
-            { title: 'AI Forecast', icon: TrendingUp, href: '/ai/forecast', permission: PERMISSIONS.AI_FORECAST_VIEW },
-            { title: 'AI Reorder', icon: BrainCircuit, href: '/ai/reorder', permission: PERMISSIONS.AI_REORDER_VIEW },
+            { title: 'Material Projection', icon: TrendingUp, href: '/material-projection', permission: PERMISSIONS.AI_FORECAST_VIEW },
+            { title: 'Shortage Analysis', icon: AlertTriangle, href: '/shortage-analysis', permission: PERMISSIONS.ALERTS_VIEW },
+            { title: 'Recommendations', icon: BarChart3, href: '/recommendations', permission: PERMISSIONS.AI_REORDER_VIEW },
+            { title: 'Supplier Performance', icon: Users, href: '/supplier-performance', permission: PERMISSIONS.SUPPLIERS_VIEW },
+            { title: 'Planning Copilot', icon: BrainCircuit, href: '/planning-copilot', permission: PERMISSIONS.AI_FORECAST_VIEW },
         ],
     },
     {
         title: 'Admin',
         items: [
-            { title: 'Users & Roles', icon: Users, href: '/users', permission: PERMISSIONS.ADMIN_USERS_MANAGE },
-            { title: 'Audit Logs', icon: History, href: '/audit-logs', permission: PERMISSIONS.ADMIN_AUDIT_VIEW },
             { title: 'Settings', icon: Settings, href: '/settings', permission: PERMISSIONS.ADMIN_SETTINGS },
         ],
     },

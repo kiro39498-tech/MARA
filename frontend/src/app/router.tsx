@@ -11,16 +11,15 @@ const LoginPage = lazy(() => import('@/features/auth/LoginPage').then(m => ({ de
 const ForgotPasswordPage = lazy(() => import('@/features/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@/features/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const DashboardPage = lazy(() => import('@/features/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
-const ProductsPage = lazy(() => import('@/features/products/ProductsPage').then(m => ({ default: m.ProductsPage })));
+// ProductsPage → MaterialsPage (planning) is used for /products
 const SuppliersPage = lazy(() => import('@/features/suppliers/SuppliersPage').then(m => ({ default: m.SuppliersPage })));
-const WarehousesListPage = lazy(() => import('@/features/warehouses/WarehousesListPage').then(m => ({ default: m.WarehousesListPage })));
+// WarehousesListPage → PlantsPage is used for /warehouses
 const CustomersListPage = lazy(() => import('@/features/customers/CustomersListPage').then(m => ({ default: m.CustomersListPage })));
 const CustomerDetailsPage = lazy(() => import('@/features/customers/CustomerDetailsPage').then(m => ({ default: m.CustomerDetailsPage })));
-const PurchasesListPage = lazy(() => import('@/features/purchases/PurchasesListPage').then(m => ({ default: m.PurchasesPage })));
 const PurchaseDetailsPage = lazy(() => import('@/features/purchases/PurchaseDetailsPage').then(m => ({ default: m.PurchaseDetailsPage })));
 const PurchaseWizard = lazy(() => import('@/features/purchases/PurchaseWizard').then(m => ({ default: m.PurchaseWizard })));
 
-const SalesPage = lazy(() => import('@/features/sales/SalesPage').then(m => ({ default: m.SalesPage })));
+// SalesPage → ProductionOrdersPage is used for /sales
 const CreateSalePage = lazy(() => import('@/features/sales/CreateSalePage').then(m => ({ default: m.CreateSalePage })));
 const SaleDetailsPage = lazy(() => import('@/features/sales/SaleDetailsPage').then(m => ({ default: m.SaleDetailsPage })));
 
@@ -29,9 +28,9 @@ const StockAdjustmentsPage = lazy(() => import('@/features/stock-adjustments/Sto
 
 const ReportsPage = lazy(() => import('@/features/reports/ReportsPage'));
 
-const AlertsPage = lazy(() => import('@/features/alerts/AlertsPage').then(m => ({ default: m.AlertsPage })));
-const AIForecastPage = lazy(() => import('@/features/ai/AIForecastPage').then(m => ({ default: m.AIForecastPage })));
-const AIReorderPage = lazy(() => import('@/features/ai/AIReorderPage').then(m => ({ default: m.AIReorderPage })));
+// AlertsPage → ShortageAnalysisPage is used for /alerts
+// AIForecastPage → MaterialProjectionPage is used for /ai/forecast
+// AIReorderPage → RecommendationsPage is used for /ai/reorder
 const AuditLogsPage = lazy(() => import('@/features/audit/AuditLogsPage').then(m => ({ default: m.default || m })));
 const UnauthorizedPage = lazy(() => import('@/features/auth/UnauthorizedPage').then(m => ({ default: m.UnauthorizedPage })));
 const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
@@ -39,16 +38,17 @@ const SettingsPage = lazy(() => import('@/features/settings/SettingsPage').then(
 const UsersPage = lazy(() => import('@/features/users/UsersPage').then(m => ({ default: m.UsersPage })));
 const DebugAuthPage = lazy(() => import('@/features/debug/DebugAuthPage').then(m => ({ default: m.DebugAuthPage })));
 
-const MaterialsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.MaterialsPage })));
-const PlantsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PlantsPage })));
-const InventoryHealthPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.InventoryHealthPage })));
-const ProductionOrdersPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.ProductionOrdersPage })));
-const PurchaseOrdersPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PurchaseOrdersPage })));
-const MaterialProjectionPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.MaterialProjectionPage })));
-const ShortageAnalysisPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.ShortageAnalysisPage })));
-const RecommendationsPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.RecommendationsPage })));
-const SupplierPerformancePage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.SupplierPerformancePage })));
-const PlanningCopilotPage = lazy(() => import('@/features/dummy-pages').then(m => ({ default: m.PlanningCopilotPage })));
+// Planning feature pages — migrated from dummy-pages.tsx
+const MaterialsPage = lazy(() => import('@/features/planning/MaterialsPage'));
+const PlantsPage = lazy(() => import('@/features/planning/PlantsPage'));
+const InventoryHealthPage = lazy(() => import('@/features/planning/InventoryHealthPage'));
+const ProductionOrdersPage = lazy(() => import('@/features/planning/ProductionOrdersPage'));
+const PurchaseOrdersPage = lazy(() => import('@/features/planning/PurchaseOrdersPage'));
+const MaterialProjectionPage = lazy(() => import('@/features/planning/MaterialProjectionPage'));
+const ShortageAnalysisPage = lazy(() => import('@/features/planning/ShortageAnalysisPage'));
+const RecommendationsPage = lazy(() => import('@/features/planning/RecommendationsPage'));
+const SupplierPerformancePage = lazy(() => import('@/features/suppliers/SupplierPerformancePage'));
+const PlanningCopilotPage = lazy(() => import('@/features/ai/PlanningCopilotPage'));
 
 // Fallback skeleton loader while routes load
 const PageLoader = () => (

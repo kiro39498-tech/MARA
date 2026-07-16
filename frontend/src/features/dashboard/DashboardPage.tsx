@@ -1,15 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  TrendingUp, 
-  Package, 
-  ShoppingCart, 
+import {
+  Package,
   AlertTriangle,
-  ArrowRight,
   ClipboardList,
-  Activity,
-  Layers,
   MapPin
 } from 'lucide-react';
 import { 

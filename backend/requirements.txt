@@ -1,6 +1,6 @@
 # FastAPI Core
-fastapi==0.109.2
-uvicorn[standard]==0.27.1
+fastapi>=0.115.0
+uvicorn[standard]>=0.31.0
 python-multipart==0.0.9
 
 # Database
@@ -14,12 +14,12 @@ passlib[bcrypt]==1.7.4
 bcrypt==4.1.2
 
 # Validation
-pydantic==2.6.1
-pydantic-settings==2.1.0
+pydantic>=2.9.0
+pydantic-settings>=2.5.0
 email-validator==2.1.0.post1
 
 # Async support
-httpx==0.26.0
+httpx>=0.27.1
 aiofiles==23.2.1
 
 # Redis (optional - for caching)
@@ -28,6 +28,13 @@ redis==5.0.1
 # Data processing
 pandas==2.2.0
 numpy==1.26.4
+
+# Microsoft Agent Framework
+agent-framework-core>=1.0.0
+agent-framework-openai>=1.0.0
+
+# MCP (Model Context Protocol) Server SDK
+mcp>=1.0.0,<2
 
 # Testing
 pytest==7.4.4

@@ -176,6 +176,32 @@ class Settings(BaseSettings):
     AI_MODEL_PATH: str = "models/"
     FORECAST_DAYS: int = 30
 
+    # -------------------------------------------------------------------------
+    # Azure OpenAI — LLM provider for MARA Planning Copilot.
+    # agent_framework.openai.OpenAIChatClient supports Azure via azure_endpoint
+    # + api_version params — no separate Azure class needed.
+    #
+    # To switch provider later, update only these four env vars.
+    # -------------------------------------------------------------------------
+    AZURE_OPENAI_ENDPOINT: str = ""        # e.g. https://maqopenai.openai.azure.com/
+    AZURE_OPENAI_API_KEY: str = ""         # Azure resource key
+    AZURE_OPENAI_DEPLOYMENT: str = "gpt-4o"  # deployment name (used as model)
+    AZURE_OPENAI_API_VERSION: str = "2024-08-01-preview"
+
+    # -------------------------------------------------------------------------
+    # MCP Planning Server
+    # The FastMCP server runs as a background task on this host:port.
+    # Agents communicate with it through MCPPlanningClient.
+    # -------------------------------------------------------------------------
+    MCP_SERVER_HOST: str = "127.0.0.1"
+    MCP_SERVER_PORT: int = 8001
+    MCP_SERVER_TIMEOUT: float = 30.0
+
+    @property
+    def MCP_SERVER_URL(self) -> str:
+        """Full base URL for the MCP planning server."""
+        return f"http://{self.MCP_SERVER_HOST}:{self.MCP_SERVER_PORT}"
+
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
         env_file_encoding="utf-8",

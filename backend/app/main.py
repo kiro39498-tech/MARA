@@ -1,5 +1,6 @@
 """Main FastAPI application."""
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
@@ -21,12 +22,47 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+async def _start_mcp_server() -> asyncio.Task:
+    """Start the MARA MCP Planning Server as a background asyncio task.
+
+    The MCP server runs on a separate port (default 8001) and exposes all
+    planning capabilities as MCP tools. Agents communicate with it through
+    MCPPlanningClient using the streamable-http transport.
+
+    Returns:
+        asyncio.Task: The background task running the MCP server.
+        Cancel this task on shutdown to stop the server gracefully.
+    """
+    from app.mcp.server import mcp  # import here to avoid circular imports at module load
+
+    async def _run():
+        try:
+            logger.info(
+                "Starting MCP Planning Server on %s:%s",
+                settings.MCP_SERVER_HOST,
+                settings.MCP_SERVER_PORT,
+            )
+            await mcp.run_async(
+                transport="streamable-http",
+                host=settings.MCP_SERVER_HOST,
+                port=settings.MCP_SERVER_PORT,
+            )
+        except asyncio.CancelledError:
+            logger.info("MCP Planning Server stopped.")
+        except Exception as exc:
+            logger.error("MCP Planning Server error: %s", exc)
+
+    task = asyncio.create_task(_run(), name="mcp-planning-server")
+    return task
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup and shutdown events.
 
-    Handles database initialization on startup and cleanup on shutdown.
+    Handles database initialization and MCP server startup on startup,
+    and cleanup on shutdown.
     """
     # Startup
     logger.info("🚀 Application startup initiated")
@@ -37,12 +73,27 @@ async def lifespan(app: FastAPI):
     if settings.DEBUG:
         await init_db()
 
+    # Start MARA MCP Planning Server as a background task
+    mcp_task = await _start_mcp_server()
+    # Give the MCP server a moment to bind to its port before agents connect
+    await asyncio.sleep(0.5)
+
     logger.info("✅ Application startup complete")
+    logger.info(
+        "📡 MCP Planning Server: http://%s:%s/mcp",
+        settings.MCP_SERVER_HOST,
+        settings.MCP_SERVER_PORT,
+    )
 
     yield
 
     # Shutdown
     logger.info("🛑 Application shutdown initiated")
+    mcp_task.cancel()
+    try:
+        await asyncio.wait_for(mcp_task, timeout=5.0)
+    except (asyncio.CancelledError, asyncio.TimeoutError):
+        pass
     await close_db()
     logger.info("✅ Application shutdown complete")
 

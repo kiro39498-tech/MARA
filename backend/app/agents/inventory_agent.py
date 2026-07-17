@@ -53,14 +53,17 @@ def _make_tools(mcp_client: MCPPlanningClient) -> list:
     are used by agent_framework to generate the function-calling schema.
     """
 
-    async def get_inventory_health_tool() -> dict:
-        """Get full inventory health for all materials across all plants.
-
-        Returns status (HEALTHY/AT_RISK/CRITICAL/SHORTAGE), stock levels,
-        safety stock thresholds, and usable inventory for every material-plant pair.
-        Call this to get an overview or to find all materials below safety stock.
-        """
-        return await mcp_client.call_tool("get_inventory_health")
+    async def get_inventory_health_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get inventory health status. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("get_inventory_health", args)
 
     async def get_material_health_tool(
         material_id: Annotated[int, "Integer ID of the material to check"],

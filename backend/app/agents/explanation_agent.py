@@ -57,9 +57,17 @@ def _make_tools(mcp_client: MCPPlanningClient) -> list:
     fetch any supporting evidence it needs to complete an explanation.
     """
 
-    async def get_inventory_health_tool() -> dict:
-        """Get full inventory health across all materials and plants."""
-        return await mcp_client.call_tool("get_inventory_health")
+    async def get_inventory_health_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get inventory health status. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("get_inventory_health", args)
 
     async def get_material_health_tool(
         material_id: Annotated[int, "Integer ID of the material"],
@@ -104,13 +112,29 @@ def _make_tools(mcp_client: MCPPlanningClient) -> list:
             args["plant_id"] = plant_id
         return await mcp_client.call_tool("analyze_po_coverage", args)
 
-    async def get_material_risk_tool() -> dict:
-        """Get risk scores for all material-plant combinations."""
-        return await mcp_client.call_tool("get_material_risk")
+    async def get_material_risk_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get risk scores. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("get_material_risk", args)
 
-    async def recommend_replenishment_tool() -> dict:
-        """Get replenishment recommendations from the planning engine."""
-        return await mcp_client.call_tool("recommend_replenishment")
+    async def recommend_replenishment_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get replenishment recommendations from the planning engine. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("recommend_replenishment", args)
 
     async def compare_plants_tool(
         material_id: Annotated[int, "Integer ID of the material"],

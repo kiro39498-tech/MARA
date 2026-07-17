@@ -125,10 +125,15 @@ class MaterialPlanningOrchestrator:
                 evidence    — structured data returned by tool calls
                 tool_calls  — list of MCP tool names that were invoked
         """
+        import time
+        start_time = time.time()
+        logger.info("[COPILOT REQUEST] Session ID: %s, Message: '%s'", session_id, message)
+        
         agent_name = "MaterialPlanningOrchestrator"
         evidence: dict[str, Any] = {}
         tool_calls: list[str] = []
         response = ""
+        tokens_used = 0
 
         try:
             # Step 1: classify intent via keyword routing
@@ -137,27 +142,38 @@ class MaterialPlanningOrchestrator:
             selected_agent, agent_name, selected_tools = self._route(msg_lower)
 
             tool_calls = selected_tools
+            logger.info("[ROUTING] Query routed to specialist agent: %s, associated tools: %s", agent_name, tool_calls)
 
             # Step 2: delegate to the selected specialist agent
             raw_response = await selected_agent.run(message)
-            response = str(raw_response)
+            response = raw_response.text
+            if raw_response.usage_details:
+                tokens_used += raw_response.usage_details.get("total_token_count") or 0
 
             # Step 3: collect evidence from MCP for structured return
             evidence = await self._collect_evidence(msg_lower, tool_calls)
 
             # Step 4: if multiple domains detected, synthesise with ExplanationAgent
             if self._needs_synthesis(msg_lower):
+                logger.info("[SYNTHESIS] Multi-domain query detected. Synthesis initiated via ExplanationAgent.")
                 synthesis_prompt = (
                     f"Synthesise the following specialist agent response into a "
                     f"single clear answer. Original question: '{message}'\n\n"
                     f"Agent response: {response}"
                 )
-                response = str(await self._explanation.run(synthesis_prompt))
+                synthesis_response = await self._explanation.run(synthesis_prompt)
+                response = synthesis_response.text
+                if synthesis_response.usage_details:
+                    tokens_used += synthesis_response.usage_details.get("total_token_count") or 0
                 agent_name = "ExplanationAgent (synthesised)"
 
+            duration = time.time() - start_time
+            logger.info("[COPILOT SUCCESS] Session ID: %s, Agent: %s, Tokens used: %s, Duration: %.2fs", session_id, agent_name, tokens_used, duration)
+
         except Exception as exc:
+            duration = time.time() - start_time
             logger.error(
-                "Orchestrator error session=%s: %s\n%s",
+                "[COPILOT ERROR] Orchestrator error session=%s: %s\n%s",
                 session_id, exc, traceback.format_exc(),
             )
             response = (
@@ -167,7 +183,7 @@ class MaterialPlanningOrchestrator:
 
         finally:
             # Step 5: always write an AgentLog entry
-            await self._write_log(session_id, agent_name, message, response, evidence)
+            await self._write_log(session_id, agent_name, message, response, evidence, tokens_used)
 
         return {
             "session_id": session_id,
@@ -283,6 +299,7 @@ class MaterialPlanningOrchestrator:
         message: str,
         response: str,
         evidence: dict,
+        tokens_used: int = 0,
     ) -> None:
         """Persist an AgentLog entry to the database."""
         try:
@@ -295,7 +312,7 @@ class MaterialPlanningOrchestrator:
                     "response": response[:2000],  # truncate large responses
                     "evidence": evidence,
                 }),
-                tokens_used=0,  # token counting not available in agent_framework yet
+                tokens_used=tokens_used,
             )
             self.db.add(log)
             await self.db.flush()

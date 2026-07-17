@@ -54,8 +54,11 @@ async def _get_db():
 # TOOL 1 — Inventory Health (all materials × all plants)
 # ===========================================================================
 @mcp.tool()
-async def get_inventory_health() -> dict:
-    """Get full inventory health status across all materials and plants.
+async def get_inventory_health(
+    material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+    plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+) -> dict:
+    """Get inventory health status across materials and plants.
 
     Returns a list of records with fields:
         material_id, material_code, material_name,
@@ -74,6 +77,14 @@ async def get_inventory_health() -> dict:
         service = InventoryIntelligenceService(db)
         result = await service.get_all_inventory_health()
         await db.commit()
+
+        if material_code:
+            mat_lower = material_code.lower().strip()
+            result = [r for r in result if mat_lower in r.get("material_code", "").lower()]
+        if plant_name:
+            plt_lower = plant_name.lower().strip()
+            result = [r for r in result if plt_lower in r.get("plant_name", "").lower()]
+
         return {"success": True, "data": result, "count": len(result)}
     except Exception as exc:
         await db.rollback()
@@ -257,8 +268,11 @@ async def analyze_po_coverage(
 # TOOL 6 — Material risk assessment (calculate + persist)
 # ===========================================================================
 @mcp.tool()
-async def get_material_risk() -> dict:
-    """Calculate deterministic risk scores (0–100) for all material-plant combinations.
+async def get_material_risk(
+    material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+    plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+) -> dict:
+    """Calculate deterministic risk scores (0–100) for material-plant combinations.
 
     Risk score formula (configurable weights):
         0.30 × Urgency
@@ -288,6 +302,14 @@ async def get_material_risk() -> dict:
         for record in result:
             if record.get("first_shortage_date"):
                 record["first_shortage_date"] = str(record["first_shortage_date"])
+
+        if material_code:
+            mat_lower = material_code.lower().strip()
+            result = [r for r in result if mat_lower in r.get("material_code", "").lower()]
+        if plant_name:
+            plt_lower = plant_name.lower().strip()
+            result = [r for r in result if plt_lower in r.get("plant_name", "").lower()]
+
         return {"success": True, "data": result, "count": len(result)}
     except Exception as exc:
         await db.rollback()
@@ -301,7 +323,10 @@ async def get_material_risk() -> dict:
 # TOOL 7 — Replenishment recommendations (calculate + persist)
 # ===========================================================================
 @mcp.tool()
-async def recommend_replenishment() -> dict:
+async def recommend_replenishment(
+    material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+    plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+) -> dict:
     """Generate evidence-backed replenishment recommendations.
 
     Applies a priority-ordered rule engine:
@@ -331,6 +356,14 @@ async def recommend_replenishment() -> dict:
             for key in ("order_date", "eta_date"):
                 if rec.get(key) and not isinstance(rec[key], str):
                     rec[key] = str(rec[key])
+
+        if material_code:
+            mat_lower = material_code.lower().strip()
+            result = [r for r in result if mat_lower in r.get("material_code", "").lower()]
+        if plant_name:
+            plt_lower = plant_name.lower().strip()
+            result = [r for r in result if plt_lower in r.get("plant_name", "").lower()]
+
         return {"success": True, "data": result, "count": len(result)}
     except Exception as exc:
         await db.rollback()

@@ -59,18 +59,23 @@ class LLMFactory:
                 "Example: https://maqopenai.openai.azure.com/"
             )
 
-        logger.debug(
+        logger.info(
             "Creating Azure OpenAI client | deployment=%s endpoint=%s api_version=%s",
             settings.AZURE_OPENAI_DEPLOYMENT,
             settings.AZURE_OPENAI_ENDPOINT,
             settings.AZURE_OPENAI_API_VERSION,
         )
 
-        return OpenAIChatClient(
-            # Deployment name is used as the model identifier for Azure
-            model=settings.AZURE_OPENAI_DEPLOYMENT,
-            # Azure-specific parameters
-            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+        from openai import AsyncAzureOpenAI
+
+        async_client = AsyncAzureOpenAI(
             api_key=settings.AZURE_OPENAI_API_KEY,
             api_version=settings.AZURE_OPENAI_API_VERSION,
+            azure_endpoint=settings.AZURE_OPENAI_ENDPOINT,
+            max_retries=5,
+        )
+
+        return OpenAIChatClient(
+            model=settings.AZURE_OPENAI_DEPLOYMENT,
+            async_client=async_client,
         )

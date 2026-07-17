@@ -51,20 +51,17 @@ Response format:
 def _make_tools(mcp_client: MCPPlanningClient) -> list:
     """Create tool functions for ReplenishmentAgent."""
 
-    async def recommend_replenishment_tool() -> dict:
-        """Generate evidence-backed replenishment recommendations.
-
-        Applies a 4-rule priority engine:
-          1. Expedite Existing Late PO
-          2. Transfer Stock Between Plants
-          3. Create New Purchase Order
-          4. Restore Safety Stock
-
-        Returns recommendations with: type, quantity, priority, confidence,
-        reason, evidence, eta_date, source_plant (for transfers).
-        Call this for all replenishment action questions.
-        """
-        return await mcp_client.call_tool("recommend_replenishment")
+    async def recommend_replenishment_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get replenishment recommendations. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("recommend_replenishment", args)
 
     async def compare_plants_tool(
         material_id: Annotated[

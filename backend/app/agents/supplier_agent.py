@@ -65,16 +65,17 @@ def _make_tools(mcp_client: MCPPlanningClient) -> list:
             args["plant_id"] = plant_id
         return await mcp_client.call_tool("analyze_po_coverage", args)
 
-    async def get_material_risk_tool() -> dict:
-        """Calculate and return risk scores (0–100) for all material-plant pairs.
-
-        Risk factors: urgency, production impact, material criticality,
-        supplier reliability, safety stock violation, late POs.
-        Returns: material_code, plant_name, risk_score, reason,
-        days_of_coverage, first_shortage_date.
-        Call this to rank materials by procurement risk.
-        """
-        return await mcp_client.call_tool("get_material_risk")
+    async def get_material_risk_tool(
+        material_code: Annotated[Optional[str], "Optional material code to filter results by (e.g., MAT-1001)"] = None,
+        plant_name: Annotated[Optional[str], "Optional plant name to filter results by (e.g., Plant A)"] = None,
+    ) -> dict:
+        """Get risk scores. Optionally filter by material code or plant name."""
+        args = {}
+        if material_code is not None:
+            args["material_code"] = material_code
+        if plant_name is not None:
+            args["plant_name"] = plant_name
+        return await mcp_client.call_tool("get_material_risk", args)
 
     return [analyze_po_coverage_tool, get_material_risk_tool]
 

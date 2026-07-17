@@ -66,8 +66,8 @@ class BaseMARAAgent:
             logger.debug("Created Agent instance for: %s", self.name)
         return self._agent
 
-    async def run(self, message: str, **kwargs: Any) -> str:
-        """Process a message and return the agent's response.
+    async def run(self, message: str, **kwargs: Any) -> Any:
+        """Process a message and return the agent's response object.
 
         The agent will:
           1. Read the message.
@@ -80,9 +80,17 @@ class BaseMARAAgent:
             **kwargs: Additional context passed to agent_framework.Agent.run().
 
         Returns:
-            Natural language response string.
+            AgentResponse object.
         """
         logger.info("Agent %s processing: %.120s", self.name, message)
         result = await self._get_agent().run(message, **kwargs)
-        logger.debug("Agent %s result: %.200s", self.name, str(result))
+        if result.usage_details:
+            logger.info(
+                "Agent %s usage: prompt_tokens=%s, completion_tokens=%s, total_tokens=%s",
+                self.name,
+                result.usage_details.get("input_token_count"),
+                result.usage_details.get("output_token_count"),
+                result.usage_details.get("total_token_count"),
+            )
+        logger.debug("Agent %s result: %.200s", self.name, result.text)
         return result

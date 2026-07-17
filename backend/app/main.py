@@ -42,11 +42,10 @@ async def _start_mcp_server() -> asyncio.Task:
                 settings.MCP_SERVER_HOST,
                 settings.MCP_SERVER_PORT,
             )
-            await mcp.run_async(
-                transport="streamable-http",
-                host=settings.MCP_SERVER_HOST,
-                port=settings.MCP_SERVER_PORT,
-            )
+            mcp.settings.host = settings.MCP_SERVER_HOST
+            mcp.settings.port = settings.MCP_SERVER_PORT
+            mcp.settings.stateless_http = True
+            await mcp.run_streamable_http_async()
         except asyncio.CancelledError:
             logger.info("MCP Planning Server stopped.")
         except Exception as exc:

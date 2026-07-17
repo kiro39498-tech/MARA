@@ -49,6 +49,7 @@ class MCPPlanningClient:
         self._client = httpx.AsyncClient(timeout=timeout)
         # MCP streamable-http endpoint
         self._mcp_endpoint = f"{self.base_url}/mcp"
+        self.session_id = None
 
     # ------------------------------------------------------------------
     # Core JSON-RPC 2.0 method
@@ -80,15 +81,24 @@ class MCPPlanningClient:
 
         logger.debug("MCP → %s params=%s", method, params)
 
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json, text/event-stream",
+        }
+        if getattr(self, "session_id", None):
+            headers["mcp-session-id"] = self.session_id
+
         response = await self._client.post(
             self._mcp_endpoint,
             json=payload,
-            headers={
-                "Content-Type": "application/json",
-                "Accept": "application/json, text/event-stream",
-            },
+            headers=headers,
         )
         response.raise_for_status()
+
+        # Capture session ID if returned
+        new_session_id = response.headers.get("mcp-session-id")
+        if new_session_id:
+            self.session_id = new_session_id
 
         # The MCP streamable-http transport may return plain JSON or SSE.
         # We handle both here.

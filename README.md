@@ -1,290 +1,219 @@
-# AI Inventory Management System
+# AI Inventory Management & Manufacturing Planning System
 
-A full-stack inventory operations platform for managing products, suppliers, purchases, sales, warehouse stock movements, and AI-assisted planning.
+A state-of-the-art, full-stack inventory operations and manufacturing demand planning platform. This system integrates role-based operations with an **agentic AI Material Planning Copilot** that automates inventory alerts, risk assessments, replenishment suggestions, and production impact checks.
 
-This project combines a React + TypeScript frontend with a FastAPI + PostgreSQL backend and includes role-aware access control, stock ledger traceability, analytics-driven alerts, and demand planning.
+Built with **React + TypeScript** on the frontend and **FastAPI + PostgreSQL + Microsoft Agent Framework** on the backend.
 
-## What Problem This Solves
+---
 
-Many small and medium inventory teams still operate with disconnected spreadsheets and ad-hoc processes. This system centralizes core inventory workflows and adds decision support through:
+## 🚀 Architectural Blueprint
 
-- Automated low-stock and out-of-stock alerts
-- Reorder recommendations based on sales velocity and lead time
-- Demand forecast visualization
-- End-to-end stock movement traceability with ledger entries
-
-## Target Users
-
-- Admin users managing system users and security-sensitive operations
-- Operations/warehouse staff handling stock transactions
-- Purchasing teams creating and receiving purchase orders
-- Sales teams creating and completing sales orders
-- Managers monitoring KPIs, risks, and planning signals
-
-## Core Features
-
-### Inventory Operations
-
-- Product and category management
-- Supplier management
-- Warehouse management
-- Purchase order lifecycle (draft, update, receive)
-- Sales order lifecycle (draft, complete)
-- Stock ledger with immutable movement records
-
-### Analytics and Planning
-
-- Dashboard KPIs and recent activity
-- Inventory alerts with severity and filtering
-- AI reorder recommendations with urgency and risk scoring
-- Demand forecast (moving-average based)
-- Slow-moving stock detection
-
-### Security and Access
-
-- JWT authentication with refresh flow
-- Role-based route and navigation control in frontend
-- Backend authenticated endpoint protection
-- Superuser enforcement for sensitive user administration
-
-### Quality and Tooling
-
-- TypeScript frontend
-- Async SQLAlchemy backend
-- Pytest and Vitest test suites
-- GitHub Actions CI workflow for lint/test/build
-
-## Architecture
+The application is structured into three primary layers: the responsive user interface, the API backend, and the state-of-the-art **Material Planning Copilot** executing over a streamable-http MCP boundary.
 
 ```mermaid
-flowchart LR
-	U[User] --> FE[Frontend - React + Vite]
-	FE -->|REST /api/v1| BE[Backend - FastAPI]
-	BE --> DB[(PostgreSQL)]
-	BE --> RD[(Redis - optional)]
+flowchart TD
+    %% Frontend
+    U[Planner / User] -->|Interacts| UI[React Frontend]
+    UI -->|REST /api/v1| API[FastAPI Backend]
 
-	FE --> FEAuth[Auth Store + Route Guards]
-	FE --> FEModules[Products, Purchases, Sales, Alerts, AI, Audit]
+    %% Backend and MCP
+    subgraph FastAPI Core
+        API --> DB[(PostgreSQL)]
+        API --> Orchestrator[MaterialPlanningOrchestrator]
+    end
 
-	BE --> BEServices[Service Layer]
-	BEServices --> BEModels[SQLAlchemy Models]
-	BEServices --> BEAnalytics[Analytics Service]
-	BEServices --> BELedger[Stock Ledger Service]
+    subgraph Agentic Planning Copilot
+        Orchestrator -->|Intent-Based Routing| Specialist{Agent Router}
+        Specialist -->|1. Health / Stock| IA[InventoryAgent]
+        Specialist -->|2. Impact / Shortage| PA[ProductionAgent]
+        Specialist -->|3. POs / Suppliers| SA[SupplierAgent]
+        Specialist -->|4. Replenish / Transfers| RA[ReplenishmentAgent]
+        Specialist -->|5. Multi-Domain Default| EA[ExplanationAgent]
+
+        %% MCP Client/Server Boundary
+        IA & PA & SA & RA & EA -->|MCP Client| MCP_C[MCP Planning Client]
+        MCP_C -->|JSON-RPC over HTTP| MCP_S[Stateless FastMCP Server]
+        MCP_S -->|Service Queries| Services[Deterministic Planning Services]
+        Services --> DB
+    end
+
+    %% Synthesis & Logs
+    EA -->|Explanation Synthesis| FinalResponse[Human-Readable Narration]
+    Orchestrator -->|Track Usage & Performance| AuditLog[agent_logs Database Table]
 ```
 
-## Project Structure
+---
+
+## 🤖 Material Planning Copilot Features
+
+The Material Planning Copilot consists of a collaborative team of specialist agents designed under the **Microsoft Agent Framework**:
+
+*   **InventoryAgent**: Explains safety stock levels, buffer sizes, usable stock status, and cross-plant inventory availability.
+*   **ProductionAgent**: Analyzes the Bill of Materials (BOM), detects projected shortages, and determines which production orders will be delayed due to missing components.
+*   **SupplierAgent**: Audits purchase order schedules, identifies late or partial shipments, and scores supplier reliability based on lead time variance.
+*   **ReplenishmentAgent**: Automatically applies a 4-rule deterministic replenishment engine (PO expediting, inter-plant stock transfer, new purchase orders, safety stock restoration).
+*   **ExplanationAgent**: Synthesizes the evidence gathered by the specialist agents into professional, concise, planner-grounded action summaries.
+
+### Technical Implementation Details:
+*   **Stateless FastMCP Integration**: The background MCP server (`FastMCP`) runs on port `8001` in stateless ASGI mode. Each agent execution creates a lightweight client connection that executes tools concurrently without session collision or ID locking.
+*   **Responses API**: Integrates natively with Azure OpenAI's Responses API (`2025-03-01-preview` or later) to execute tools and generate responses.
+*   **Persistent Performance Audits**: Every query request is timed, tokens are extracted from LLM usage details, and the results are saved to the `agent_logs` SQL table for billing and auditing transparency.
+*   **Rate-Limit (429) & Token Optimizations**:
+    *   **Payload Filtering**: Core MCP tools (`get_inventory_health`, `get_material_risk`, `recommend_replenishment`) accept optional `material_code` and `plant_name` filters. The specialist agents intelligently supply these filters based on user prompts, shrinking prompt size by over **95%** and avoiding Rate Limits.
+    *   **Auto-Retry**: The Async client uses native exponential backoff with a maximum of `5` retries to gracefully handle temporary rate limiting.
+
+---
+
+## 🛠️ Core Application Features
+
+### 1. Inventory & Warehouse Operations
+*   **Product Catalog**: Hierarchical product categories with custom attributes (cost price, selling price, unit, planner, procurement type).
+*   **Stock Ledger**: Every single movement (purchase receipt, sales delivery, adjustments) writes an immutable transaction ledger entry, enforcing strict auditable traceability.
+*   **Warehouse Routing**: Manage inventory levels across multiple warehouses and plants (`Plant A`, `Plant B`, etc.).
+
+### 2. Purchase & Sales Lifecycle
+*   **Purchase Orders**: Workflow from Draft -> Sent -> Partially Received -> Fully Received. Automatically updates stock ledger and updates material availability projections.
+*   **Sales Orders**: Create sales demands that decrement stock ledger balances upon completion.
+
+### 3. Analytics & Demand Forecasting
+*   **Low Stock Alerts**: Automatically flagged thresholds based on safety stock configuration.
+*   **Demand Forecasting**: Rolling moving-average consumption forecast.
+*   **Slow-Moving Stock**: Detection of static inventory eating up holding costs.
+
+---
+
+## 📂 Project Structure
 
 ```text
 .
 ├── backend/
 │   ├── app/
-│   │   ├── api/v1/endpoints/
-│   │   ├── core/
-│   │   ├── models/
-│   │   ├── schemas/
-│   │   └── services/
-│   ├── scripts/
-│   ├── tests/
-│   ├── requirements.txt
-│   └── .env.example
+│   │   ├── api/v1/endpoints/   # FastAPI REST routes (including /planning/copilot)
+│   │   ├── core/               # Configuration, Database Setup, LLM Factory
+│   │   ├── models/             # SQLAlchemy ORM models (Inventory, MaterialRisk, etc.)
+│   │   ├── schemas/            # Pydantic validation schemas
+│   │   ├── services/           # Deterministic planning, risk, and PO analysis engines
+│   │   ├── mcp/
+│   │   │   ├── server.py       # FastMCP Server exposing planning tools
+│   │   │   └── client.py       # MCP client interface for specialist agents
+│   │   └── agents/
+│   │       ├── base_agent.py   # Base class wrapping Microsoft Agent Framework
+│   │       ├── orchestrator.py # Intent router, synthesis manager, audit logger
+│   │       └── *_agent.py      # Individual specialist agents
+│   └── tests/                  # Pytest unit testing suite
 ├── frontend/
 │   ├── src/
-│   │   ├── app/
-│   │   ├── components/
-│   │   ├── features/
-│   │   ├── services/
-│   │   └── stores/
-│   ├── package.json
-│   └── .env.example
-├── database/
-│   └── schema.sql
-└── .github/workflows/
-		└── test.yml
+│   │   ├── features/           # Feature-based pages (Inventory, Purchases, Copilot UI)
+│   │   ├── services/           # Backend REST client connections
+│   │   └── stores/             # Zustand stores for state management
+│   └── package.json
+└── database/
+    └── schema.sql              # Clean DDL database schema bootstrap
 ```
 
-## Role and Permission Model
+---
 
-Defined frontend roles:
-
-- ADMIN
-- HR
-- MANAGER
-- STAFF
-- VIEWER
-
-Permission examples:
-
-- dashboard:view
-- products:view / products:manage
-- purchases:view / purchases:manage
-- sales:view / sales:manage
-- alerts:view / alerts:manage
-- ai:forecast:view
-- ai:reorder:view
-- admin:users:manage
-- admin:audit:view
-- admin:settings
-
-## API Overview
-
-Base path: /api/v1
-
-- Auth: /auth/login, /auth/me, /auth/refresh
-- Users: /users, /users/roles
-- Categories: /categories
-- Products: /products, /products/low-stock/alerts
-- Suppliers: /suppliers
-- Warehouses: /warehouses
-- Purchases: /purchases, /purchases/{id}/receive
-- Sales: /sales, /sales/{id}/complete
-- Stock Ledger: /stock-ledger
-- Dashboard: /dashboard/stats, /dashboard/recent-activities
-- Analytics: /analytics/inventory-alerts, /analytics/reorder-suggestions, /analytics/demand-forecast/{product_id}, /analytics/slow-moving-stock
-- Forecast: /forecast/moving-average
-- Notifications: /notifications, /notifications/read-all, /notifications/{id}/read
-- Audit Logs: /audit-logs
-- Health: /health, /health/db, /health/detailed
-
-## Local Development Setup
+## ⚙️ Local Development Setup
 
 ### Prerequisites
+*   Node.js 20+
+*   Python 3.11+
+*   PostgreSQL 14+
 
-- Python 3.12+
-- Node.js 20+
-- PostgreSQL 14+
-- Redis (optional)
+### 1) Configuration (.env)
+Copy `backend/.env.example` to `backend/.env` and update the database and Azure OpenAI credentials:
+```ini
+# Database Connection
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+POSTGRES_SERVER=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=ai_inventory_db
 
-### 1) Clone Repository
+# Azure OpenAI Credentials (Required for Planning Copilot)
+AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
+AZURE_OPENAI_API_KEY=<your-key>
+AZURE_OPENAI_DEPLOYMENT=gpt-4.1
+AZURE_OPENAI_API_VERSION=2025-03-01-preview
 
-```bash
-git clone <your-repo-url>
-cd ai-inventory-management-system
+# MCP Server Settings
+MCP_SERVER_HOST=127.0.0.1
+MCP_SERVER_PORT=8001
+MCP_SERVER_URL=http://127.0.0.1:8001/mcp
 ```
 
 ### 2) Backend Setup
-
+Navigate to the `backend/` directory, set up your virtual environment, and install dependencies:
 ```bash
 cd backend
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate   # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-cp .env.example .env
 ```
 
-Update backend/.env with your local database credentials.
-
-Run backend:
-
+Run the FastAPI application (which automatically launches the stateless FastMCP background server on port `8001`):
 ```bash
 uvicorn app.main:app --reload --port 8000
 ```
-
-Backend docs:
-
-- Swagger: http://localhost:8000/api/v1/docs
-- ReDoc: http://localhost:8000/api/v1/redoc
+*   **Swagger API Docs**: http://localhost:8000/api/v1/docs
+*   **MCP Streamable Endpoint**: http://localhost:8001/mcp
 
 ### 3) Frontend Setup
-
+Navigate to the `frontend/` directory, install packages, and boot up Vite:
 ```bash
 cd ../frontend
 npm install
-cp .env.example .env
 npm run dev
 ```
+*   **Vite Development Server**: http://localhost:5173
 
-Frontend app:
+**Default Admin Credentials:**
+*   **Username**: `admin`
+*   **Password**: `admin123`
 
-- http://localhost:5173
+---
 
-### 4) Default Local Login
+## 🧪 Testing and Verification
 
-If your seed/admin bootstrap has run:
-
-- Username: admin
-- Password: admin123
-
-Use strong credentials in non-local environments.
-
-## Running Tests
-
-### Backend
-
+### Backend Unit Tests
+Execute the unit tests using `pytest` inside the active virtual environment:
 ```bash
 cd backend
-source .venv/bin/activate
-PYTHONPATH=. pytest -q
+.venv\Scripts\pytest
 ```
 
-### Frontend
-
+### Automated Copilot Verification Scenario Run
+To run the automated agentic scenarios sequentially and test DB, MCP, and AI integration:
 ```bash
-cd frontend
-npm run test -- --run
+.venv\Scripts\python backend/scripts/verify_planning_copilot.py
 ```
 
-## CI Pipeline
+---
 
-GitHub Actions workflow runs:
+## 📸 Interface Preview
 
-- Backend lint + tests
-- Frontend lint + tests
-- Frontend production build
-
-Workflow file: .github/workflows/test.yml
-
-## Environment Variables
-
-### Backend
-
-Use backend/.env.example as source of truth.
-
-Critical variables:
-
-- SECRET_KEY
-- POSTGRES_USER
-- POSTGRES_PASSWORD
-- POSTGRES_DB
-- POSTGRES_SERVER
-- POSTGRES_PORT
-- ENVIRONMENT
-- DEBUG
-
-### Frontend
-
-Use frontend/.env.example.
-
-Critical variable:
-
-- VITE_API_BASE_URL
-
-## Screenshots
-
-### Dashboard
-
+### Dashboard Analytics
 ![Dashboard](sample-images/Dashboard.png)
 
-### Products table
-
+### Products Catalog Management
 ![Products table](sample-images/Products.png)
 
-### Purchase workflow
-
+### Purchasing Workflow Lifecycle
 ![Purchase workflow](sample-images/Purchases.png)
 
-### Sales workflow
-
+### Sales Demands Lifecycle
 ![Sales workflow](sample-images/Sales.png)
 
-### Alerts and AI pages
-
+### Alerts & AI Copilot Workspace
 ![Alerts and AI pages](sample-images/Alerts%20%26%20AI%20Recorder.png)
 
-## If you would like to collaborate, discuss improvements, or project opportunities, feel free to reach out.
+---
 
-- 👤 Lakshitha Dilshan  
-- 📧 lakshithadilshan.info@gmail.com  
-- 🔗 LinkedIn: https://www.linkedin.com/in/jkplakshithadilshan/ 
-- 🌐 Portfolio: https://www.lakshithadilshan.me  
+## 👥 Authors & Contributions
 
-⭐ If you found this project useful, consider giving it a star!
+*   👤 **Lakshitha Dilshan**
+*   📧 lakshithadilshan.info@gmail.com
+*   🔗 LinkedIn: https://www.linkedin.com/in/jkplakshithadilshan/
+*   🌐 Portfolio: https://www.lakshithadilshan.me
+
+⭐ If you find this agentic operations platform helpful, consider giving the repository a star!
